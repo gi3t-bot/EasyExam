@@ -1,0 +1,617 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}EasyExam — Fintech, Capital Markets & Algorithmic Trading Exam Prep{% endblock %}
+
+{% block content %}
+<div class="landing-page">
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- TOP NAVIGATION BAR -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <header class="landing-nav">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="nav-brand">
+                <div class="brand-logo sm">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                    </svg>
+                </div>
+                <div class="brand-text-col">
+                    <span class="brand-name">EasyExam</span>
+                    <span class="brand-badge-fintech">Fintech & Trading</span>
+                </div>
+            </a>
+
+            <nav class="nav-menu">
+                <a href="#certifications" class="nav-link">Certifications</a>
+                <a href="#features" class="nav-link">Why EasyExam</a>
+                <a href="#reviews" class="nav-link">Wall of Success</a>
+            </nav>
+
+            <div class="nav-auth-actions">
+                {% if user.is_authenticated %}
+                <a href="{% url 'accounts:dashboard' %}" class="btn btn-secondary btn-sm">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    <span>Student Dashboard</span>
+                </a>
+                <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline btn-sm">Sign Out</button>
+                </form>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-sm">Sign In</a>
+                <a href="{% url 'accounts:login' %}?tab=register" class="btn btn-primary btn-sm">Get Started Free</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- HERO SECTION -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <div class="hero-tag-badge">
+                <span class="pulse-dot"></span>
+                <span>Annual Certifications Prep • NISM, NCFM & Quant Finance</span>
+            </div>
+
+            <h1 class="hero-title">
+                Master Your <span class="gradient-text">Capital Markets</span> & <br>
+                <span class="gradient-text">Algorithmic Trading</span> Certifications
+            </h1>
+
+            <p class="hero-desc">
+                High-yield timed mock tests, previous year papers (PYQs), and detailed quantitative solutions built specifically for proprietary traders, research analysts, and fintech professionals.
+            </p>
+
+            <!-- Search Bar (Testbook Style) -->
+            <div class="hero-search-wrapper">
+                <div class="search-input-group">
+                    <span class="search-icon">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </span>
+                    <input type="text" id="examSearchInput" placeholder="Search certifications (e.g. NISM Series VIII, Algo Trading, Research Analyst...)" autocomplete="off">
+                    <button type="button" class="btn btn-primary search-btn" onclick="filterBySearch()">
+                        <span>Search Mocks</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="hero-stats-row">
+                <div class="stat-item">
+                    <span class="stat-num">50,000+</span>
+                    <span class="stat-lbl">Mock Tests Taken</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-num">99.2%</span>
+                    <span class="stat-lbl">Pass Rate</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-num">1-Year</span>
+                    <span class="stat-lbl">Updated Validity</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-num">100%</span>
+                    <span class="stat-lbl">Real Test Engine UI</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- CERTIFICATIONS DIRECTORY & TABS -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <section class="certifications-section" id="certifications">
+        <div class="section-container">
+            <div class="section-header text-center">
+                <h2 class="section-heading">Featured Test Series</h2>
+                <p class="section-subtext">Choose your target annual assessment to start practicing timed simulated mock tests</p>
+            </div>
+
+            <!-- Category Filter Pills -->
+            <div class="category-pills-bar">
+                <button type="button" class="cat-pill active" onclick="filterCategory('all', this)">All Certifications</button>
+                <button type="button" class="cat-pill" onclick="filterCategory('derivatives', this)">Securities & Derivatives</button>
+                <button type="button" class="cat-pill" onclick="filterCategory('quant', this)">Algorithmic & Quant Finance</button>
+                <button type="button" class="cat-pill" onclick="filterCategory('research', this)">Research Analyst</button>
+                <button type="button" class="cat-pill" onclick="filterCategory('portfolio', this)">Portfolio Management</button>
+            </div>
+
+            <!-- Exam Cards Grid -->
+            <div class="exam-cards-grid" id="examCardsGrid">
+                {% for exam in certifications %}
+                <div class="exam-card" data-category="{{ exam.category }}" data-title="{{ exam.title|lower }}">
+                    <!-- Card Top Tag -->
+                    <div class="card-top-row">
+                        <span class="cat-label">{{ exam.category_label }}</span>
+                        <span class="validity-badge">{{ exam.validity }}</span>
+                    </div>
+
+                    <!-- Title & Subtitle -->
+                    <h3 class="exam-card-title">{{ exam.title }}</h3>
+                    <p class="exam-card-subtitle">{{ exam.subtitle }}</p>
+
+                    <!-- Exam Specs Pills Grid -->
+                    <div class="exam-specs-grid">
+                        <div class="spec-pill">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                            <span>{{ exam.questions_count }}</span>
+                        </div>
+                        <div class="spec-pill">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>{{ exam.duration }}</span>
+                        </div>
+                        <div class="spec-pill">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Pass: {{ exam.passing_score }}</span>
+                        </div>
+                        <div class="spec-pill danger-pill">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>{{ exam.negative_marking }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Materials Count -->
+                    <div class="card-materials-meta">
+                        <div class="materials-tags">
+                            <span class="materials-dot"></span>
+                            <span>{{ exam.mock_tests_count }} Full Mocks</span>
+                            <span class="separator">•</span>
+                            <span>{{ exam.pyqs_count }} Solved PYQs</span>
+                        </div>
+                        <div class="rating-badge">
+                            ★ {{ exam.rating }} ({{ exam.enrolled_count }})
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="card-action-buttons">
+                        <a href="{% url 'accounts:login' %}?tab=register" class="btn btn-outline btn-block">
+                            <span>Free Demo Mock</span>
+                        </a>
+                        <a href="{% url 'accounts:login' %}?tab=register" class="btn btn-primary btn-block">
+                            <span>Enroll Series</span>
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- PLATFORM FEATURES (TESTBOOK STYLE) -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <section class="features-section" id="features">
+        <div class="section-container">
+            <div class="section-header text-center">
+                <span class="features-pill-tag">Engineered for Trading Desks</span>
+                <h2 class="section-heading">Why Fintech & Trading Professionals Choose EasyExam</h2>
+                <p class="section-subtext">Built to simulate real exchange and certification environments with pinpoint accuracy</p>
+            </div>
+
+            <div class="features-grid">
+                <!-- Feature 1 -->
+                <div class="feature-card">
+                    <div class="feature-icon-box">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <h3 class="feature-title">Real Exam Simulator</h3>
+                    <p class="feature-desc">Familiarize yourself with the exact NISM/NSE timer layout, question palette, review flags, and navigation before your exam day.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card">
+                    <div class="feature-icon-box">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <h3 class="feature-title">Mathematical & Quant Explanations</h3>
+                    <p class="feature-desc">Step-by-step calculations for Options Greeks, delta hedging, implied volatility, Value at Risk (VaR), and derivative payoff matrices.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card">
+                    <div class="feature-icon-box">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="feature-title">Negative Marking Conditioning</h3>
+                    <p class="feature-desc">Train your guessing discipline with accurate 25% negative marking penalties, helping you protect your passing threshold.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card">
+                    <div class="feature-icon-box">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    </div>
+                    <h3 class="feature-title">1-Year Renewal Tracking</h3>
+                    <p class="feature-desc">Since financial certifications expire every 1–3 years, our question banks and regulatory changes are dynamically updated annually.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- WALL OF SUCCESS / REVIEWS (PINNED HORIZONTAL SCROLL) -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <section class="reviews-pinned-section" id="reviews">
+        <div class="reviews-sticky-viewport">
+            <div class="reviews-header-container">
+                <span class="features-pill-tag">Wall of Success</span>
+                <h2 class="section-heading">Trusted by Traders & Quantitative Analysts</h2>
+                <p class="section-subtext">Hear from candidates who cleared their regulatory certifications on attempt #1</p>
+            </div>
+
+            <div class="reviews-horizontal-window" id="reviewsMarquee">
+                <div class="reviews-horizontal-track" id="reviewsTrack">
+                    <!-- ══ CARD 1 ══ -->
+                    <div class="review-card">
+                        <div class="review-top-bar">
+                            <div class="review-stars">★★★★★</div>
+                            <span class="review-exam-tag tag-primary">NISM Series VIII</span>
+                        </div>
+                        <p class="review-quote">"Cleared NISM Series VIII with 84% in my first try. The mock tests on EasyExam had the exact numerical difficulty as the actual NSE test center exam."</p>
+                        <div class="reviewer-meta">
+                            <div class="reviewer-profile">
+                                <div class="reviewer-avatar av-indigo">RK</div>
+                                <div>
+                                    <div class="reviewer-name">Rohan Kapoor</div>
+                                    <div class="reviewer-role">Equity Derivatives Trader • Mumbai</div>
+                                </div>
+                            </div>
+                            <span class="reviewer-score-badge">Scored 84%</span>
+                        </div>
+                    </div>
+
+                    <!-- ══ CARD 2 ══ -->
+                    <div class="review-card">
+                        <div class="review-top-bar">
+                            <div class="review-stars">★★★★★</div>
+                            <span class="review-exam-tag tag-primary">NCFM Algo Trading</span>
+                        </div>
+                        <p class="review-quote">"The NCFM Algorithmic Trading question bank was spot on. The step-by-step formula breakdown on options delta and market microstructure is unmatched."</p>
+                        <div class="reviewer-meta">
+                            <div class="reviewer-profile">
+                                <div class="reviewer-avatar av-purple">SN</div>
+                                <div>
+                                    <div class="reviewer-name">Shreya Nair</div>
+                                    <div class="reviewer-role">Quant Analyst • Bengaluru</div>
+                                </div>
+                            </div>
+                            <span class="reviewer-score-badge">Scored 88%</span>
+                        </div>
+                    </div>
+
+                    <!-- ══ CARD 3 ══ -->
+                    <div class="review-card">
+                        <div class="review-top-bar">
+                            <div class="review-stars">★★★★★</div>
+                            <span class="review-exam-tag tag-success">NISM Series XV</span>
+                        </div>
+                        <p class="review-quote">"Our desk requires all junior analysts to renew their Series XV Research Analyst credentials every year. EasyExam is our go-to drill portal."</p>
+                        <div class="reviewer-meta">
+                            <div class="reviewer-profile">
+                                <div class="reviewer-avatar av-emerald">AP</div>
+                                <div>
+                                    <div class="reviewer-name">Anand Parekh</div>
+                                    <div class="reviewer-role">Head of Research • FinTech Capital</div>
+                                </div>
+                            </div>
+                            <span class="reviewer-score-badge">Passed (Renewed)</span>
+                        </div>
+                    </div>
+
+                    <!-- ══ CARD 4 ══ -->
+                    <div class="review-card">
+                        <div class="review-top-bar">
+                            <div class="review-stars">★★★★★</div>
+                            <span class="review-exam-tag tag-amber">HFT Microstructure</span>
+                        </div>
+                        <p class="review-quote">"The order book dynamics, synthetic spreads, and latency scenarios in the mock simulator gave me total confidence on exam day."</p>
+                        <div class="reviewer-meta">
+                            <div class="reviewer-profile">
+                                <div class="reviewer-avatar av-cyan">DC</div>
+                                <div>
+                                    <div class="reviewer-name">Devendra Chawla</div>
+                                    <div class="reviewer-role">HFT Execution Engineer • Gurugram</div>
+                                </div>
+                            </div>
+                            <span class="reviewer-score-badge">Scored 92%</span>
+                        </div>
+                    </div>
+
+                    <!-- ══ CARD 5 ══ -->
+                    <div class="review-card">
+                        <div class="review-top-bar">
+                            <div class="review-stars">★★★★★</div>
+                            <span class="review-exam-tag tag-primary">Quant Risk & VaR</span>
+                        </div>
+                        <p class="review-quote">"Realistic Value at Risk (VaR), portfolio stress testing, and Black-Scholes Greeks problems. The best test repository for prop desk candidates."</p>
+                        <div class="reviewer-meta">
+                            <div class="reviewer-profile">
+                                <div class="reviewer-avatar av-rose">PS</div>
+                                <div>
+                                    <div class="reviewer-name">Priyanka Sen</div>
+                                    <div class="reviewer-role">Derivatives Risk Manager • Mumbai</div>
+                                </div>
+                            </div>
+                            <span class="reviewer-score-badge">Scored 86%</span>
+                        </div>
+                    </div>
+
+                    <!-- ══ CARD 6 ══ -->
+                    <div class="review-card">
+                        <div class="review-top-bar">
+                            <div class="review-stars">★★★★★</div>
+                            <span class="review-exam-tag tag-amber">NISM Series XVI</span>
+                        </div>
+                        <p class="review-quote">"Cleared Commodity Derivatives on attempt #1. The physical settlement, basis risk, and warehouse receipt questions matched the real test format precisely."</p>
+                        <div class="reviewer-meta">
+                            <div class="reviewer-profile">
+                                <div class="reviewer-avatar av-amber">VI</div>
+                                <div>
+                                    <div class="reviewer-name">Varun Iyer</div>
+                                    <div class="reviewer-role">Commodities Arbitrageur • Ahmedabad</div>
+                                </div>
+                            </div>
+                            <span class="reviewer-score-badge">Scored 82%</span>
+                        </div>
+                    </div>
+
+                    <!-- ══ CARD 7 ══ -->
+                    <div class="review-card">
+                        <div class="review-top-bar">
+                            <div class="review-stars">★★★★★</div>
+                            <span class="review-exam-tag tag-success">NISM Series XXI-A</span>
+                        </div>
+                        <p class="review-quote">"Crucial for clearing the SEBI portfolio mandate. Detailed breakdowns of performance attribution, hurdle rates, and Sharpe ratios."</p>
+                        <div class="reviewer-meta">
+                            <div class="reviewer-profile">
+                                <div class="reviewer-avatar av-blue">MS</div>
+                                <div>
+                                    <div class="reviewer-name">Meera Singhania</div>
+                                    <div class="reviewer-role">PMS Portfolio Strategist • Mumbai</div>
+                                </div>
+                            </div>
+                            <span class="reviewer-score-badge">Cleared (SEBI)</span>
+                        </div>
+                    </div>
+
+                    <!-- ══ CARD 8 ══ -->
+                    <div class="review-card">
+                        <div class="review-top-bar">
+                            <div class="review-stars">★★★★★</div>
+                            <span class="review-exam-tag tag-primary">NISM Series VIII</span>
+                        </div>
+                        <p class="review-quote">"Scored 91% in NISM VIII. The timed mock test engine conditioned me to manage the 120-minute time constraint without any panic."</p>
+                        <div class="reviewer-meta">
+                            <div class="reviewer-profile">
+                                <div class="reviewer-avatar av-indigo">SM</div>
+                                <div>
+                                    <div class="reviewer-name">Siddharth Mehta</div>
+                                    <div class="reviewer-role">Proprietary Options Trader • Delhi</div>
+                                </div>
+                            </div>
+                            <span class="reviewer-score-badge">Scored 91%</span>
+                        </div>
+                    </div>
+
+                    <!-- ══ CARD 9: FINAL CTA CARD ══ -->
+                    <div class="review-card review-cta-card">
+                        <div class="cta-card-icon">⚡</div>
+                        <h3 class="cta-card-title">Join 15,000+ Certified Fintech Professionals</h3>
+                        <p class="cta-card-desc">Prepare with realistic timed mock test engines, step-by-step quant formulas, and negative marking drills.</p>
+                        <a href="{% url 'accounts:login' %}?tab=register" class="btn btn-primary btn-block">
+                            <span>Start Free Demo Mock</span>
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- CALL TO ACTION BANNER -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <section class="cta-banner-section">
+        <div class="cta-container">
+            <div class="cta-card">
+                <h2 class="cta-heading">Ready to Ace Your Trading Certification?</h2>
+                <p class="cta-sub">Start practicing with our free demo mocks right away. No payment required to test the interface.</p>
+                <div class="cta-actions">
+                    <a href="{% url 'accounts:login' %}?tab=register" class="btn btn-primary btn-lg">
+                        <span>Get Started Free</span>
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- FOOTER -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <footer class="landing-footer">
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-col-brand">
+                    <div class="nav-brand">
+                        <div class="brand-logo sm">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                            </svg>
+                        </div>
+                        <span class="brand-name">EasyExam</span>
+                    </div>
+                    <p class="footer-brand-desc">
+                        India's focused mock test and past exam prep portal for capital markets, algorithmic trading, and quantitative finance certifications.
+                    </p>
+                </div>
+
+                <div class="footer-col">
+                    <h4 class="footer-title">Certifications</h4>
+                    <ul class="footer-links">
+                        <li><a href="#certifications">NISM Series VIII: Equity Derivatives</a></li>
+                        <li><a href="#certifications">NCFM Algorithmic Trading</a></li>
+                        <li><a href="#certifications">NISM Series XV: Research Analyst</a></li>
+                        <li><a href="#certifications">Quantitative Finance & Risk</a></li>
+                        <li><a href="#certifications">NISM Series XVI: Commodities</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4 class="footer-title">Platform</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Exam Simulator</a></li>
+                        <li><a href="{% url 'accounts:login' %}">Student Login</a></li>
+                        <li><a href="{% url 'accounts:login' %}?tab=register">Register Account</a></li>
+                        <li><a href="{% url 'admin:index' %}">Admin Portal</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; {% now "Y" %} EasyExam Technologies. All rights reserved.</p>
+                <p class="disclaimer">Disclaimer: EasyExam is an independent educational prep platform and is not affiliated with or endorsed by NISM, NSE, or SEBI.</p>
+            </div>
+        </div>
+    </footer>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // ── Instant Category Filter ─────────────────────────────────────
+    function filterCategory(category, buttonElement) {
+        // Update active pill button
+        document.querySelectorAll('.cat-pill').forEach(btn => btn.classList.remove('active'));
+        if (buttonElement) {
+            buttonElement.classList.add('active');
+        }
+
+        const cards = document.querySelectorAll('.exam-card');
+        cards.forEach(card => {
+            if (category === 'all' || card.getAttribute('data-category') === category) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // ── Instant Search Filter ───────────────────────────────────────
+    function filterBySearch() {
+        const query = document.getElementById('examSearchInput').value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.exam-card');
+
+        cards.forEach(card => {
+            const title = card.getAttribute('data-title') || '';
+            const subtitle = card.querySelector('.exam-card-subtitle')?.textContent.toLowerCase() || '';
+            if (!query || title.includes(query) || subtitle.includes(query)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Reset category pills
+        document.querySelectorAll('.cat-pill').forEach(btn => btn.classList.remove('active'));
+        const allPill = document.querySelector('.cat-pill');
+        if (allPill) allPill.classList.add('active');
+    }
+
+    // Live search on typing
+    const searchInput = document.getElementById('examSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', filterBySearch);
+    }
+
+    // ── Ultra-Smooth In-Page Jumping for Navigation Links ──────────
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const targetId = this.getAttribute('href');
+            if (!targetId || targetId === '#') return;
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                e.preventDefault();
+                const nav = document.querySelector('.landing-nav');
+                const navHeight = nav ? nav.offsetHeight : 72;
+                const elementPosition = targetElement.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - navHeight + 2;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+
+                if (window.history && window.history.pushState) {
+                    window.history.pushState(null, null, targetId);
+                }
+            }
+        });
+    });
+
+    // ── Pinned Horizontal Showcase (Page Stops for 3-4 Scrolls) ────
+    (function initPinnedReviews() {
+        const pinSection = document.getElementById('reviews');
+        const stickyViewport = document.querySelector('.reviews-sticky-viewport');
+        const track = document.getElementById('reviewsTrack');
+        if (!pinSection || !stickyViewport || !track) return;
+
+        let targetTranslateX = 0;
+        let currentTranslateX = 0;
+
+        function updatePosition() {
+            const nav = document.querySelector('.landing-nav');
+            const navHeight = nav ? nav.offsetHeight : 72;
+            const sectionRect = pinSection.getBoundingClientRect();
+            
+            // Total vertical scroll distance where pinning is active (~3-4 scrolls)
+            const scrollableDistance = pinSection.offsetHeight - stickyViewport.offsetHeight;
+            
+            // Distance scrolled within the pinned container
+            const scrolled = navHeight - sectionRect.top;
+
+            // Clamped progress from 0.0 to 1.0
+            let progress = 0;
+            if (scrollableDistance > 0) {
+                progress = Math.min(Math.max(scrolled / scrollableDistance, 0), 1);
+            }
+
+            // Total horizontal distance the track needs to travel across the viewport
+            const viewportWidth = window.innerWidth;
+            const maxHorizontalScroll = Math.max(0, track.scrollWidth - viewportWidth + 96);
+
+            // As progress increases (scrolling down), cards move right to left (-X)
+            targetTranslateX = - (progress * maxHorizontalScroll);
+        }
+
+        window.addEventListener('scroll', updatePosition, { passive: true });
+        window.addEventListener('resize', updatePosition);
+        // Initial sync
+        updatePosition();
+
+        // High-framerate physics momentum loop
+        function animationLoop() {
+            currentTranslateX += (targetTranslateX - currentTranslateX) * 0.12;
+            track.style.transform = `translate3d(${currentTranslateX}px, 0, 0)`;
+            requestAnimationFrame(animationLoop);
+        }
+
+        requestAnimationFrame(animationLoop);
+    })();
+</script>
+{% endblock %}

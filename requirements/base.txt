@@ -1,0 +1,27 @@
+# ─────────────────────────────────────────────────────────────
+# requirements/base.txt
+# Dependencies used in ALL environments (dev + prod)
+# ─────────────────────────────────────────────────────────────
+
+# Django core
+Django==5.1.1
+
+# PostgreSQL adapter
+psycopg2-binary==2.9.9
+
+# Environment variable management
+python-decouple==3.8
+
+# Celery + Redis broker
+celery==5.4.0
+redis==5.1.0
+django-celery-results==2.5.1      # store task results in DB (handy for polling)
+django-celery-beat==2.7.0         # periodic tasks (analytics snapshots)
+
+# S3-compatible object storage
+django-storages==1.14.4
+boto3==1.35.0
+
+# Image handling (for question diagram images)
+Pillow==10.4.0
+

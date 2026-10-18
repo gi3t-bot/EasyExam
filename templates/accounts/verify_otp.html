@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Verify Email — EasyExam{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card otp-card">
+        <div class="auth-header">
+            <div class="brand-logo">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="3"></rect>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                </svg>
+            </div>
+            <h1 class="auth-title">Check your inbox</h1>
+            <p class="auth-subtitle">We sent a 6-digit confirmation code to <strong>{{ email }}</strong></p>
+        </div>
+
+        {% if error %}
+        <div class="form-error-banner" style="margin-bottom: 20px;">
+            <div class="error-text"><p>{{ error }}</p></div>
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'accounts:verify_otp' %}" class="auth-form" style="display: flex; flex-direction: column; align-items: center; gap: 20px;" novalidate>
+            {% csrf_token %}
+            <div class="form-group" style="width: 100%; text-align: center;">
+                <input type="text" name="otp" id="otpInput" class="form-input otp-single-input" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="••••••" autofocus required autocomplete="one-time-code">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                <span>Confirm & Create Account</span>
+            </button>
+        </form>
+
+        <div style="margin-top: 24px; text-align: center; font-size: 0.88rem; color: var(--text-muted);">
+            <div id="countdownArea">
+                Didn't receive code? Resend in <span id="secondsLeft" style="font-weight: 700; color: var(--primary);">60</span>s
+            </div>
+            <form method="post" action="{% url 'accounts:resend_otp' %}" id="resendForm" class="is-hidden" style="margin-top: 6px;">
+                {% csrf_token %}
+                <button type="submit" class="auth-link" style="background:none; border:none; cursor:pointer; font-weight:600; color:var(--primary);">Click here to resend code</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let remaining = 60;
+    const timerSpan = document.getElementById('secondsLeft');
+    const countdownArea = document.getElementById('countdownArea');
+    const resendForm = document.getElementById('resendForm');
+
+    const interval = setInterval(() => {
+        remaining--;
+        if (timerSpan) timerSpan.textContent = remaining;
+        if (remaining <= 0) {
+            clearInterval(interval);
+            countdownArea.classList.add('is-hidden');
+            resendForm.classList.remove('is-hidden');
+        }
+    }, 1000);
+</script>
+{% endblock %}

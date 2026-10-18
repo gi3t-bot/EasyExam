@@ -1,0 +1,11 @@
+# ─────────────────────────────────────────────────────────────
+# requirements/prod.txt
+# Production-only extras — NOT needed in development
+# ─────────────────────────────────────────────────────────────
+-r base.txt
+
+# WSGI server
+gunicorn==22.0.0
+
+# Sentry for error tracking (optional — configure DSN in prod .env)
+sentry-sdk==2.14.0

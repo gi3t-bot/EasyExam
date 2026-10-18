@@ -1,0 +1,864 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ current_exam.short }} — EasyExam Certification Suite{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/supercoaching.css' %}?v={% now 'U' %}">
+{% endblock %}
+
+{% block content %}
+<div class="supercoaching-page">
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- 1. TOP NAVBAR (EASYEXAM MODERN SAAS NAVBAR) -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <header class="super-nav">
+        <div class="super-nav-container">
+            <!-- Left: Brand & Target Exam Selector -->
+            <div class="super-nav-left">
+                <a href="{% url 'accounts:dashboard' %}" class="super-brand" title="EasyExam Dashboard">
+                    <div class="brand-glyph">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <span class="super-brand-logo-text">EasyExam<span class="brand-accent-dot">.</span></span>
+                    <span class="brand-tag-edition">PRO</span>
+                </a>
+
+                <!-- Exam Switcher Dropdown -->
+                <div class="exam-selector-wrapper">
+                    <button type="button" class="exam-selector-btn" id="examDropdownBtn" onclick="toggleExamDropdown()">
+                        <span>{{ current_exam.code }} 2025</span>
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+
+                    <div class="exam-dropdown-menu" id="examDropdownMenu">
+                        <div class="exam-dropdown-header">Select Certification Course</div>
+                        {% for exam in available_exams %}
+                        <a href="?exam={{ exam.code }}" class="exam-dropdown-item {% if exam.code == current_exam.code %}active{% endif %}">
+                            <span>{{ exam.name }}</span>
+                            {% if exam.code == current_exam.code %}
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            {% endif %}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center: Search Input Bar -->
+            <div class="super-nav-search">
+                <input type="text" id="courseSearchInput" class="super-search-input" placeholder="Search courses, test series, study notes..." oninput="filterCoursesBySearch()">
+                <div class="super-search-icon">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+
+            <!-- Right: Language, Pass Active, Notifications, User Profile -->
+            <div class="super-nav-right">
+
+                <div class="nav-pass-active" title="Free Student Pass is Active">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Pass Active</span>
+                </div>
+
+                <!-- Notifications Dropdown -->
+                <div class="nav-notifications-wrapper">
+                    <button type="button" class="nav-icon-btn" id="notifBellBtn" title="Notifications" onclick="toggleNotificationMenu()">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <span class="nav-unread-dot" id="notifUnreadDot"></span>
+                    </button>
+
+                    <div class="nav-notifications-menu" id="notificationMenu">
+                        <div class="notif-header">
+                            <div class="notif-header-title">
+                                <span>Notifications</span>
+                                <span class="notif-badge-count" id="notifCountBadge">2 New</span>
+                            </div>
+                            <button type="button" class="notif-mark-read-btn" onclick="markAllNotificationsRead()">Mark all as read</button>
+                        </div>
+
+                        <div class="notif-list">
+                            <!-- Item 1: Live Class -->
+                            <div class="notif-item unread" onclick="switchMainTab('demo-classes'); toggleNotificationMenu();">
+                                <div class="notif-icon-circle notif-icon-live">
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                </div>
+                                <div class="notif-content-col">
+                                    <div class="notif-item-title">Live Options Greeks Class Starts Today</div>
+                                    <div class="notif-item-desc">NISM Series VIII live doubt clearing & numerical drill session with Mr. Rohan Tyagi at 7:00 PM.</div>
+                                    <div class="notif-item-meta">
+                                        <span class="notif-item-tag tag-live">Live Class</span>
+                                        <span>• 15 mins ago</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Item 2: Mock Tests -->
+                            <div class="notif-item unread" onclick="switchMainTab('test-series'); toggleNotificationMenu();">
+                                <div class="notif-icon-circle notif-icon-mock">
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <div class="notif-content-col">
+                                    <div class="notif-item-title">2 Full Mock Tests Added to Your Series</div>
+                                    <div class="notif-item-desc">Simulated tests 07 &amp; 08 with official 25% negative marking are now available to attempt.</div>
+                                    <div class="notif-item-meta">
+                                        <span class="notif-item-tag tag-mock">Test Series</span>
+                                        <span>• 2 hours ago</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Item 3: Formula Revision -->
+                            <div class="notif-item" onclick="switchMainTab('free-resources'); toggleNotificationMenu();">
+                                <div class="notif-icon-circle notif-icon-doc">
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                </div>
+                                <div class="notif-content-col">
+                                    <div class="notif-item-title">Options Greeks Formula Cheat Sheet (2025)</div>
+                                    <div class="notif-item-desc">Updated mathematical formula sheet with Put-Call parity and Delta hedging formulas.</div>
+                                    <div class="notif-item-meta">
+                                        <span class="notif-item-tag tag-doc">Resource</span>
+                                        <span>• 1 day ago</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notif-footer">
+                            <a href="javascript:void(0)" class="notif-footer-link" onclick="switchMainTab('test-series'); toggleNotificationMenu();">View All Exam Updates →</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Profile Dropdown -->
+                <div class="nav-profile-wrapper">
+                    <div class="nav-avatar-btn" id="userProfileBtn" onclick="toggleProfileMenu()">
+                        <span>{{ user.username|make_list|first|upper }}</span>
+                    </div>
+
+                    <div class="nav-profile-menu" id="userProfileMenu">
+                        <div class="nav-profile-info">
+                            <div class="nav-profile-name">{{ user.full_name }}</div>
+                            <div class="nav-profile-email">{{ user.email }}</div>
+                        </div>
+
+                        <a href="{% url 'home' %}" class="nav-profile-link">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                            <span>EasyExam Home</span>
+                        </a>
+
+                        {% if user.is_staff %}
+                        <a href="{% url 'admin:index' %}" class="nav-profile-link">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <span>Admin Portal</span>
+                        </a>
+                        {% endif %}
+
+                        <form method="post" action="{% url 'accounts:logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-profile-link" style="color: #ef4444;">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                <span>Sign Out</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- 2. HERO SECTION (DEEP INDIGO BANNER + PLAN CHECKOUT CARD) -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <section class="super-hero-section">
+        <div class="super-hero-container">
+            <!-- Left: Banner Card (Exam Prep Hero in Dark Theme) -->
+            <div class="super-banner-card prep-hero-card">
+                <div class="prep-hero-content">
+                    <div class="prep-hero-badge">
+                        <span>Practice</span> • Prepare • Succeed
+                    </div>
+                    <h1 class="prep-hero-title">
+                        Your Exam Preparation<br>
+                        <span class="prep-title-highlight">Starts Here</span>
+                    </h1>
+                    <p class="prep-hero-subtitle">
+                        Take mock tests, practice questions, and track your progress for {{ current_exam.short }} — all in one place.
+                    </p>
+                    <div class="prep-hero-actions">
+                        <a href="#test-series" class="prep-hero-cta" onclick="switchMainTab('test-series')">
+                            <span>Start Practicing</span>
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="prep-hero-illustration" aria-hidden="true">
+                    <svg class="prep-illustration-svg" viewBox="0 0 420 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <!-- Ambient Glow -->
+                            <radialGradient id="cardBgGlow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#7C3AED" stop-opacity="0.35"/>
+                                <stop offset="60%" stop-color="#4F46E5" stop-opacity="0.12"/>
+                                <stop offset="100%" stop-color="#1E1B4B" stop-opacity="0"/>
+                            </radialGradient>
+
+                            <!-- Laptop Screen Chassis -->
+                            <linearGradient id="laptopLid" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#312E81"/>
+                                <stop offset="50%" stop-color="#1E1B4B"/>
+                                <stop offset="100%" stop-color="#0F172A"/>
+                            </linearGradient>
+
+                            <!-- Screen Bezel -->
+                            <linearGradient id="screenBezel" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#4F46E5"/>
+                                <stop offset="100%" stop-color="#1E1B4B"/>
+                            </linearGradient>
+
+                            <!-- Screen Interior Display -->
+                            <linearGradient id="screenDisplay" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#161438"/>
+                                <stop offset="100%" stop-color="#0E0C22"/>
+                            </linearGradient>
+
+                            <!-- Screen Glass Sheen -->
+                            <linearGradient id="screenGloss" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.14"/>
+                                <stop offset="45%" stop-color="#FFFFFF" stop-opacity="0.02"/>
+                                <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+                            </linearGradient>
+
+                            <!-- Laptop Keyboard Base -->
+                            <linearGradient id="laptopBase" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#3730A3"/>
+                                <stop offset="50%" stop-color="#1E1B4B"/>
+                                <stop offset="100%" stop-color="#0F172A"/>
+                            </linearGradient>
+
+                            <!-- Leaves Gradients (Emerald Palette from Screenshot 1) -->
+                            <linearGradient id="leafGrad1" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#064E3B"/>
+                                <stop offset="50%" stop-color="#059669"/>
+                                <stop offset="100%" stop-color="#10B981"/>
+                            </linearGradient>
+                            <linearGradient id="leafGrad2" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#047857"/>
+                                <stop offset="100%" stop-color="#34D399"/>
+                            </linearGradient>
+
+                            <!-- Graduation Cap Gradients -->
+                            <linearGradient id="capTop" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#312E81"/>
+                                <stop offset="50%" stop-color="#1E1B4B"/>
+                                <stop offset="100%" stop-color="#0F172A"/>
+                            </linearGradient>
+                            <linearGradient id="capBand" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#1E1B4B"/>
+                                <stop offset="100%" stop-color="#0B0F19"/>
+                            </linearGradient>
+
+                            <!-- Checkbox Background -->
+                            <linearGradient id="checkBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#064E3B"/>
+                                <stop offset="100%" stop-color="#022C22"/>
+                            </linearGradient>
+
+                            <!-- Books Gradients -->
+                            <linearGradient id="bookCoverBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#2563EB"/>
+                                <stop offset="50%" stop-color="#3B82F6"/>
+                                <stop offset="100%" stop-color="#1D4ED8"/>
+                            </linearGradient>
+                            <linearGradient id="bookCoverAmber" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#D97706"/>
+                                <stop offset="50%" stop-color="#F59E0B"/>
+                                <stop offset="100%" stop-color="#B45309"/>
+                            </linearGradient>
+                            <linearGradient id="bookCoverPurple" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#6D28D9"/>
+                                <stop offset="50%" stop-color="#7C3AED"/>
+                                <stop offset="100%" stop-color="#5B21B6"/>
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Ambient Glow behind Laptop -->
+                        <ellipse cx="230" cy="155" rx="150" ry="110" fill="url(#cardBgGlow)"/>
+
+                        <!-- Foliage / Leaves on Left behind laptop -->
+                        <g opacity="0.95">
+                            <path d="M72 175 C58 150 48 115 62 82 C68 102 78 122 84 140 C80 152 76 164 72 175Z" fill="url(#leafGrad1)"/>
+                            <path d="M52 142 C30 132 18 112 24 92 C38 98 48 114 54 130 Z" fill="url(#leafGrad2)"/>
+                            <path d="M80 128 C88 104 102 90 118 84 C112 100 102 118 90 132 Z" fill="url(#leafGrad2)"/>
+                            <path d="M68 98 C58 75 62 52 76 40 C80 58 78 78 74 94 Z" fill="url(#leafGrad1)"/>
+                            <path d="M86 160 C98 142 112 136 126 138 C118 152 106 160 92 166 Z" fill="url(#leafGrad2)" opacity="0.8"/>
+                        </g>
+
+                        <!-- Ground Shadow under Laptop & Books -->
+                        <ellipse cx="232" cy="242" rx="160" ry="14" fill="#040714" opacity="0.65"/>
+
+                        <!-- ── LAPTOP ─────────────────────────────── -->
+                        <g>
+                            <!-- Laptop Base Lip -->
+                            <path d="M100 226 L300 226 C306 226 312 230 310 236 L302 244 C300 246 294 248 288 248 L112 248 C106 248 100 246 98 244 L90 236 C88 230 94 226 100 226 Z" fill="url(#laptopBase)"/>
+                            <!-- Front Notch / Trackpad bevel -->
+                            <path d="M178 227 L222 227 C224 227 225 228 225 230 L223 233 C223 234 221 235 219 235 L181 235 C179 235 177 234 177 233 L175 230 C175 228 176 227 178 227 Z" fill="#6366F1" opacity="0.6"/>
+                            <!-- Base Bottom Edge Highlight -->
+                            <path d="M112 247 L288 247" stroke="#4F46E5" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+
+                            <!-- Screen Bezel -->
+                            <rect x="122" y="68" width="166" height="158" rx="10" fill="url(#screenBezel)" stroke="#6366F1" stroke-width="1.5" stroke-opacity="0.5"/>
+
+                            <!-- Screen Display Area -->
+                            <rect x="130" y="76" width="150" height="142" rx="6" fill="url(#screenDisplay)"/>
+                            <rect x="130" y="76" width="150" height="142" rx="6" stroke="#4338CA" stroke-width="1" stroke-opacity="0.6" fill="none"/>
+
+                            <!-- Screen Glass Sheen -->
+                            <polygon points="130,76 220,76 130,166" fill="url(#screenGloss)"/>
+
+                            <!-- Checklist Row 1 -->
+                            <g>
+                                <rect x="144" y="94" width="18" height="18" rx="4" fill="url(#checkBg)" stroke="#10B981" stroke-width="1.5"/>
+                                <path d="M148 103 L152 107 L158 99" stroke="#34D399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="170" y="97" width="94" height="6" rx="3" fill="#6366F1" opacity="0.8"/>
+                                <rect x="170" y="106" width="62" height="4" rx="2" fill="#475569" opacity="0.5"/>
+                            </g>
+
+                            <!-- Checklist Row 2 -->
+                            <g>
+                                <rect x="144" y="126" width="18" height="18" rx="4" fill="url(#checkBg)" stroke="#10B981" stroke-width="1.5"/>
+                                <path d="M148 135 L152 139 L158 131" stroke="#34D399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="170" y="129" width="84" height="6" rx="3" fill="#6366F1" opacity="0.8"/>
+                                <rect x="170" y="138" width="50" height="4" rx="2" fill="#475569" opacity="0.5"/>
+                            </g>
+
+                            <!-- Checklist Row 3 -->
+                            <g>
+                                <rect x="144" y="158" width="18" height="18" rx="4" fill="url(#checkBg)" stroke="#10B981" stroke-width="1.5"/>
+                                <path d="M148 167 L152 171 L158 163" stroke="#34D399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="170" y="161" width="90" height="6" rx="3" fill="#6366F1" opacity="0.8"/>
+                                <rect x="170" y="170" width="68" height="4" rx="2" fill="#475569" opacity="0.5"/>
+                            </g>
+
+                            <!-- Bottom Progress Line on Screen -->
+                            <rect x="144" y="196" width="122" height="4" rx="2" fill="#1E1B4B"/>
+                            <rect x="144" y="196" width="88" height="4" rx="2" fill="url(#leafGrad2)"/>
+                        </g>
+
+                        <!-- ── STACK OF BOOKS ───────────────────────── -->
+                        <g>
+                            <!-- Bottom Book (Blue) -->
+                            <rect x="272" y="218" width="82" height="16" rx="3" fill="url(#bookCoverBlue)" stroke="#1E40AF" stroke-width="1"/>
+                            <rect x="276" y="221" width="75" height="10" rx="1.5" fill="#E2E8F0"/>
+                            <line x1="280" y1="224" x2="346" y2="224" stroke="#CBD5E1" stroke-width="0.8"/>
+                            <line x1="280" y1="228" x2="346" y2="228" stroke="#CBD5E1" stroke-width="0.8"/>
+                            <rect x="270" y="217" width="7" height="18" rx="2" fill="#1E3A8A"/>
+
+                            <!-- Middle Book (Warm Amber) -->
+                            <rect x="278" y="198" width="76" height="15" rx="3" fill="url(#bookCoverAmber)" stroke="#B45309" stroke-width="1"/>
+                            <rect x="282" y="201" width="69" height="9" rx="1.5" fill="#FEF3C7"/>
+                            <line x1="286" y1="204" x2="346" y2="204" stroke="#FDE68A" stroke-width="0.8"/>
+                            <line x1="286" y1="207" x2="346" y2="207" stroke="#FDE68A" stroke-width="0.8"/>
+                            <rect x="276" y="197" width="7" height="17" rx="2" fill="#92400E"/>
+
+                            <!-- Top Book (Royal Violet) -->
+                            <rect x="275" y="179" width="74" height="14" rx="3" fill="url(#bookCoverPurple)" stroke="#5B21B6" stroke-width="1"/>
+                            <rect x="279" y="182" width="67" height="8" rx="1.5" fill="#F3E8FF"/>
+                            <line x1="283" y1="185" x2="340" y2="185" stroke="#DDD6FE" stroke-width="0.8"/>
+                            <rect x="273" y="178" width="7" height="16" rx="2" fill="#4C1D95"/>
+                            <path d="M320 180 L320 210 L324 206 L328 210 L328 180 Z" fill="#10B981"/>
+                        </g>
+
+                        <!-- ── GRADUATION CAP / MORTARBOARD ─────────── -->
+                        <g>
+                            <!-- Cap Base Underneath -->
+                            <path d="M256 64 C256 64 256 74 272 75 C288 76 294 68 294 68 L286 61 Z" fill="url(#capBand)"/>
+                            <ellipse cx="274" cy="67" rx="18" ry="6" fill="#1E1B4B" stroke="#4338CA" stroke-width="0.8"/>
+
+                            <!-- Diamond Mortarboard -->
+                            <polygon points="230,48 274,34 318,48 274,62" fill="url(#capTop)" stroke="#6366F1" stroke-width="1.2"/>
+                            <polyline points="230,48 274,34 318,48" stroke="#818CF8" stroke-width="1" stroke-linecap="round" fill="none"/>
+
+                            <!-- Center Button -->
+                            <ellipse cx="274" cy="48" rx="3.5" ry="2.5" fill="#F59E0B" stroke="#D97706" stroke-width="0.8"/>
+
+                            <!-- Tassel Draped on Right -->
+                            <path d="M274 48 C286 52 304 56 308 72 C310 82 311 96 312 110" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" fill="none"/>
+                            <rect x="309" y="108" width="6" height="3" rx="1" fill="#D97706"/>
+                            <path d="M309 111 L307 125 C307 126 317 126 317 125 L315 111 Z" fill="#FBBF24"/>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+
+            <!-- Right: Plan & Special Offers Card -->
+            <div class="super-plan-card">
+                <div>
+                    <div class="offers-header">
+                        <h2 class="offers-title">Special Offers for You!</h2>
+                        <a href="javascript:void(0)" class="offers-coupon-link" onclick="openCouponModal()">Apply Coupon</a>
+                    </div>
+
+                    <!-- Coupon Banner Box -->
+                    <div class="coupon-banner-box">
+                        <div class="coupon-icon">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
+                        <div class="coupon-text-col">
+                            <div class="coupon-code-name" id="appliedCouponCode">PRODESK100 Applied</div>
+                            <div class="coupon-desc">100% Free Full Certification Access Active</div>
+                        </div>
+                        <svg width="18" height="18" fill="var(--ee-accent)" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    </div>
+
+                    <!-- Plan Selection -->
+                    <div class="plan-select-section">
+                        <div class="plan-select-header">
+                            <span class="plan-select-title">Select your plan</span>
+                            <a href="#pricing" class="plan-see-all" onclick="switchMainTab('pricing')">See All Plans &gt;</a>
+                        </div>
+
+                        <div class="plan-options-container">
+                            <div class="plan-option-item selected" onclick="selectPlanOption(this, 0)">
+                                <label class="plan-radio-label">
+                                    <input type="radio" name="plan" checked>
+                                    <span>1-Year Full Pass (All 25 Mocks + Videos)</span>
+                                </label>
+                                <span class="plan-price-tag">₹0</span>
+                            </div>
+
+                            <div class="plan-option-item" onclick="selectPlanOption(this, 0)">
+                                <label class="plan-radio-label">
+                                    <input type="radio" name="plan">
+                                    <span>6-Month Fast-Track Sprint Batch</span>
+                                </label>
+                                <span class="plan-price-tag">₹0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Summary & CTA -->
+                <div>
+                    <div class="payment-summary-row">
+                        <span class="payment-label">
+                            <span>Amount to be paid</span>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </span>
+                        <div>
+                            <span class="payment-original">₹4,999</span>
+                            <span class="payment-amount" id="finalAmountText">₹0</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-claim-free" onclick="claimCourseAccess()">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span>Claim For Free</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- 3. STICKY SUB-NAVIGATION TABS (MATCHING TESTBOOK) -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <nav class="super-subnav-wrapper">
+        <div class="super-subnav-container">
+            <button type="button" class="subnav-tab-btn active" onclick="switchMainTab('courses')">Courses</button>
+            <button type="button" class="subnav-tab-btn" onclick="switchMainTab('test-series')">Test Series</button>
+            <button type="button" class="subnav-tab-btn" onclick="switchMainTab('free-resources')">Free Tests</button>
+            <button type="button" class="subnav-tab-btn" onclick="switchMainTab('study-notes')">Study Notes</button>
+        </div>
+    </nav>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- 4. MAIN BODY CONTENT TABS -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <main class="super-main-content">
+
+        <!-- ── TAB 1: COURSES (DEFAULT VIEW) ────────────────────────── -->
+        <div id="tab-courses" class="tab-content-panel active">
+            <div class="section-top-bar">
+                <h2 class="section-main-heading">5+ Specialized Certification Courses</h2>
+            </div>
+
+            <div class="section-layout-grid">
+                <!-- Left: Category Sidebar Filter -->
+                <aside class="category-filter-sidebar">
+                    <button type="button" class="category-pill-btn active" onclick="filterCourseCategory('all', this)">All Courses</button>
+                    <button type="button" class="category-pill-btn" onclick="filterCourseCategory('live', this)">Live Courses</button>
+                    <button type="button" class="category-pill-btn" onclick="filterCourseCategory('quant', this)">Quant &amp; Options Math</button>
+                    <button type="button" class="category-pill-btn" onclick="filterCourseCategory('mocks', this)">Mock Test Discussions</button>
+                    <button type="button" class="category-pill-btn" onclick="filterCourseCategory('crash', this)">Fast-Track Sprints</button>
+                </aside>
+
+                <!-- Right: Courses List Cards -->
+                <div class="courses-cards-container" id="coursesListContainer">
+                    {% for course in courses %}
+                    <div class="course-card-item" data-category="{{ course.category }}">
+                        <!-- Left Thumbnail -->
+                        <div class="course-thumb-box">
+                            <span class="course-badge-pill {{ course.badge_class }}">{{ course.badge }}</span>
+                            <div class="thumb-title">{{ course.title }}</div>
+                            <div class="thumb-mentor-chips">
+                                {% for mentor in course.instructors %}
+                                <div class="thumb-mentor-avatar" title="{{ mentor.name }} ({{ mentor.role }})">{{ mentor.avatar }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Right Info Col -->
+                        <div class="course-info-col">
+                            <div>
+                                <div class="course-header-row">
+                                    <h3 class="course-title-text">{{ course.title }}</h3>
+                                    <span class="course-badge-pill {{ course.badge_class }}">{{ course.badge }}</span>
+                                </div>
+                                <div class="course-byline">{{ course.subtitle }}</div>
+
+                                <div class="course-features-tags">
+                                    {% for feat in course.features %}
+                                    <span class="course-feature-pill">✓ {{ feat }}</span>
+                                    {% endfor %}
+                                    <span class="course-feature-pill">🗣 {{ course.language }}</span>
+                                </div>
+                            </div>
+
+                            <div class="course-footer-row">
+                                <div class="course-rating-block">
+                                    <span class="course-rating-star">★</span>
+                                    <span>{{ course.rating }}</span>
+                                    <span class="course-enrolled-count">({{ course.enrolled }} students)</span>
+                                </div>
+
+                                <div class="course-action-buttons">
+                                    <button type="button" class="btn-view-details" onclick="openCourseModal('{{ course.title }}')">View Details</button>
+                                    <button type="button" class="btn-start-course" onclick="startLearning('{{ course.title }}')">Start Learning</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ── TAB 2: TEST SERIES (MOCK DRILLS) ─────────────────────── -->
+        <div id="tab-test-series" class="tab-content-panel">
+            <div class="section-top-bar">
+                <h2 class="section-main-heading">{{ current_exam.code }} Official Pattern Full Mock Tests</h2>
+                <div class="nav-pass-active" style="padding: 6px 12px; border-radius: 8px; font-size: 0.85rem;">Free Unlimited Attempts</div>
+            </div>
+
+            <div class="test-series-grid">
+                {% for test in test_series %}
+                <div class="test-mock-card">
+                    <div>
+                        <div class="test-card-top">
+                            {% if test.free %}
+                            <span class="test-free-tag">Free Mock</span>
+                            {% else %}
+                            <span class="test-pro-tag">Pass Unlocked</span>
+                            {% endif %}
+                            <span style="font-size: 0.78rem; color: #64748b;">Negative Marking: -{{ test.negative }}</span>
+                        </div>
+                        <h3 class="test-title">{{ test.title }}</h3>
+                        <div class="test-meta-pills">
+                            <span>📝 {{ test.questions }} Questions</span>
+                            <span>⏱️ {{ test.duration }}</span>
+                            <span>🎯 {{ test.marks }} Marks</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-start-mock" onclick="startMockTest('{{ test.title }}')">Start Mock Test</button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+
+        <!-- ── TAB 3: FREE RESOURCES ────────────────────────────────── -->
+        <div id="tab-free-resources" class="tab-content-panel">
+            <div class="section-top-bar">
+                <h2 class="section-main-heading">Free Downloads &amp; Formula Sheets</h2>
+            </div>
+
+            <div class="test-series-grid">
+                <div class="test-mock-card">
+                    <div>
+                        <span class="test-free-tag">PDF Document</span>
+                        <h3 class="test-title" style="margin-top: 10px;">Options Greeks &amp; Volatility Mathematical Formula Cheat Sheet (2025)</h3>
+                        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">Complete formula derivations for Delta, Gamma, Theta, Vega, and Rho.</p>
+                    </div>
+                    <button type="button" class="btn-start-mock" style="background: #10b981;" onclick="downloadResource('Options Greeks Formula Sheet')">Download Free PDF</button>
+                </div>
+
+                <div class="test-mock-card">
+                    <div>
+                        <span class="test-free-tag">PDF Document</span>
+                        <h3 class="test-title" style="margin-top: 10px;">SEBI &amp; Exchange Regulatory Acts Quick Revision Handout</h3>
+                        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">Summary of SCRA 1956, SEBI Act 1992, and Takeover Regulations.</p>
+                    </div>
+                    <button type="button" class="btn-start-mock" style="background: #10b981;" onclick="downloadResource('Regulatory Acts Handout')">Download Free PDF</button>
+                </div>
+
+                <div class="test-mock-card">
+                    <div>
+                        <span class="test-free-tag">Simulator Demo</span>
+                        <h3 class="test-title" style="margin-top: 10px;">NSE Exam Test Center Navigation Guide &amp; Keypad Rules</h3>
+                        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">Familiarize with the real computer interface used at NSE IT test centers.</p>
+                    </div>
+                    <button type="button" class="btn-start-mock" style="background: #10b981;" onclick="downloadResource('NSE Test Center Guide')">Download Free PDF</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ── TAB 6: STUDY NOTES ───────────────────────────────────── -->
+        <div id="tab-study-notes" class="tab-content-panel">
+            <div class="section-top-bar">
+                <h2 class="section-main-heading">Chapter-wise Study Notes &amp; Summaries</h2>
+            </div>
+            <div class="test-series-grid">
+                <div class="test-mock-card">
+                    <h3 class="test-title">Chapter 1: Basics of Derivatives &amp; Market Microstructure</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">Forward contracts, Futures, Margin mechanism, and Mark to Market.</p>
+                    <button type="button" class="btn-start-mock" onclick="startLearning('Chapter 1 Notes')">Read Notes Online</button>
+                </div>
+                <div class="test-mock-card">
+                    <h3 class="test-title">Chapter 2: Understanding Options Payoffs &amp; Black-Scholes</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">Call/Put parity, intrinsic value vs time value, and Greek sensitivities.</p>
+                    <button type="button" class="btn-start-mock" onclick="startLearning('Chapter 2 Notes')">Read Notes Online</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── TAB 7: PRACTICE ENTITY ───────────────────────────────── -->
+        <div id="tab-practice" class="tab-content-panel">
+            <div class="section-top-bar">
+                <h2 class="section-main-heading">Adaptive Topic-wise Practice Drills</h2>
+            </div>
+            <div class="test-series-grid">
+                <div class="test-mock-card">
+                    <h3 class="test-title">Drill 1: Synthetic Future &amp; Arbitrage Calculations</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">25 Timed Practice Questions • Instant Answers with Explanations</p>
+                    <button type="button" class="btn-start-mock" onclick="startMockTest('Arbitrage Drill')">Start Practice Drill</button>
+                </div>
+                <div class="test-mock-card">
+                    <h3 class="test-title">Drill 2: Regulatory Penalty &amp; Code of Conduct MCQs</h3>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">30 SEBI Compliance Scenarios • High Repeat Frequency</p>
+                    <button type="button" class="btn-start-mock" onclick="startMockTest('Compliance Drill')">Start Practice Drill</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── TAB 8: PRICING ───────────────────────────────────────── -->
+        <div id="tab-pricing" class="tab-content-panel">
+            <div class="section-top-bar">
+                <h2 class="section-main-heading">EasyExam Pro Pass Membership</h2>
+            </div>
+            <div class="test-series-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+                <div class="test-mock-card" style="border: 2px solid var(--ee-accent);">
+                    <span class="test-free-tag" style="background: var(--ee-accent); color: #fff; width: fit-content;">CURRENT STUDENT PLAN</span>
+                    <h3 class="test-title" style="margin-top: 10px; font-size: 1.4rem;">Full 1-Year Pass</h3>
+                    <div style="font-size: 2rem; font-weight: 900; color: var(--ee-text-primary); margin-bottom: 12px;">₹0 <span style="font-size: 0.9rem; color: #94a3b8; text-decoration: line-through;">₹4,999</span></div>
+                    <ul style="list-style: none; padding: 0; font-size: 0.88rem; color: #334155; margin-bottom: 24px; line-height: 2;">
+                        <li>✓ Access to all 6 Fintech &amp; Trading Certifications</li>
+                        <li>✓ 248 Full Length Mock Tests with All India Ranking</li>
+                        <li>✓ Live Doubts on G-Meet with Prop Desk Mentors</li>
+                        <li>✓ Chapter-wise Formulas &amp; Study PDFs</li>
+                    </ul>
+                    <button type="button" class="btn-claim-free" onclick="claimCourseAccess()">Current Plan Active</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- 6. INTERACTIVE MODALS -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- Coupon Modal -->
+    <div class="modal-overlay" id="couponModal">
+        <div class="modal-content-card">
+            <button type="button" class="modal-close-btn" onclick="closeModal('couponModal')">&times;</button>
+            <div class="modal-celebrate-icon">🎟️</div>
+            <h3 class="modal-title">Apply Discount Coupon</h3>
+            <p class="modal-desc">Enter your desk code or student discount coupon below.</p>
+            <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+                <input type="text" id="couponInput" class="super-search-input" value="PRODESK100" style="text-transform: uppercase;">
+                <button type="button" class="btn-start-course" onclick="applyCouponCode()">Apply</button>
+            </div>
+            <div style="background: #f0fdf4; border: 1px dashed #86efac; padding: 10px; border-radius: 8px; font-size: 0.8rem; color: #166534;">
+                Active Promo: <strong>PRODESK100</strong> (100% OFF for trading desk candidates)
+            </div>
+        </div>
+    </div>
+
+    <!-- Claim / Start Modal -->
+    <div class="modal-overlay" id="claimModal">
+        <div class="modal-content-card">
+            <button type="button" class="modal-close-btn" onclick="closeModal('claimModal')">&times;</button>
+            <div class="modal-celebrate-icon">🎉</div>
+            <h3 class="modal-title" id="claimModalTitle">Full Access Activated!</h3>
+            <p class="modal-desc" id="claimModalDesc">You have claimed full free access to the <strong>{{ current_exam.name }}</strong> batch, full mock tests, and formula sheets.</p>
+            <button type="button" class="btn-claim-free" onclick="closeModal('claimModal'); switchMainTab('test-series');">
+                <span>Start Official Mock Tests Now</span>
+            </button>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // ── Dropdown Toggles ────────────────────────────────────────────
+    function toggleExamDropdown() {
+        const menu = document.getElementById('examDropdownMenu');
+        menu.classList.toggle('show');
+        document.getElementById('userProfileMenu')?.classList.remove('show');
+        document.getElementById('notificationMenu')?.classList.remove('show');
+    }
+
+    function toggleProfileMenu() {
+        const menu = document.getElementById('userProfileMenu');
+        menu.classList.toggle('show');
+        document.getElementById('examDropdownMenu')?.classList.remove('show');
+        document.getElementById('notificationMenu')?.classList.remove('show');
+    }
+
+    function toggleNotificationMenu() {
+        const menu = document.getElementById('notificationMenu');
+        menu.classList.toggle('show');
+        document.getElementById('examDropdownMenu')?.classList.remove('show');
+        document.getElementById('userProfileMenu')?.classList.remove('show');
+    }
+
+    function markAllNotificationsRead() {
+        document.querySelectorAll('.notif-item.unread').forEach(item => item.classList.remove('unread'));
+        const dot = document.getElementById('notifUnreadDot');
+        if (dot) dot.style.display = 'none';
+        const badge = document.getElementById('notifCountBadge');
+        if (badge) {
+            badge.textContent = '0 New';
+            badge.style.background = '#94a3b8';
+        }
+    }
+
+    // Close dropdowns when clicking outside
+    window.addEventListener('click', function(e) {
+        if (!e.target.closest('.exam-selector-wrapper')) {
+            document.getElementById('examDropdownMenu')?.classList.remove('show');
+        }
+        if (!e.target.closest('.nav-profile-wrapper')) {
+            document.getElementById('userProfileMenu')?.classList.remove('show');
+        }
+        if (!e.target.closest('.nav-notifications-wrapper')) {
+            document.getElementById('notificationMenu')?.classList.remove('show');
+        }
+    });
+
+    // ── Main Sub-Navigation Tab Switching ───────────────────────────
+    function switchMainTab(tabId) {
+        // Update tab buttons
+        document.querySelectorAll('.subnav-tab-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = Array.from(document.querySelectorAll('.subnav-tab-btn')).find(b => 
+            b.textContent.toLowerCase().includes(tabId.replace('-', ' '))
+        );
+        if (activeBtn) activeBtn.classList.add('active');
+
+        // Hide all panels
+        document.querySelectorAll('.tab-content-panel').forEach(panel => panel.classList.remove('active'));
+
+        // Show target panel
+        const targetPanel = document.getElementById(`tab-${tabId}`);
+        if (targetPanel) {
+            targetPanel.classList.add('active');
+            targetPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // ── Left Category Filtering ─────────────────────────────────────
+    function filterCourseCategory(category, buttonElement) {
+        document.querySelectorAll('.category-pill-btn').forEach(btn => btn.classList.remove('active'));
+        if (buttonElement) buttonElement.classList.add('active');
+
+        const cards = document.querySelectorAll('.course-card-item');
+        cards.forEach(card => {
+            const cardCat = card.getAttribute('data-category');
+            if (category === 'all' || cardCat === category) {
+                card.style.display = 'grid';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // ── Live Course Search Filter ───────────────────────────────────
+    function filterCoursesBySearch() {
+        const query = document.getElementById('courseSearchInput').value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.course-card-item');
+
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            if (!query || text.includes(query)) {
+                card.style.display = 'grid';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // ── Plan Selection ──────────────────────────────────────────────
+    function selectPlanOption(element, price) {
+        document.querySelectorAll('.plan-option-item').forEach(el => el.classList.remove('selected'));
+        element.classList.add('selected');
+        const radio = element.querySelector('input[type="radio"]');
+        if (radio) radio.checked = true;
+        document.getElementById('finalAmountText').textContent = `₹${price}`;
+    }
+
+    // ── Modal Handlers ──────────────────────────────────────────────
+    function openCouponModal() {
+        document.getElementById('couponModal').classList.add('show');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('show');
+    }
+
+    function applyCouponCode() {
+        const code = document.getElementById('couponInput').value.toUpperCase().trim();
+        if (code) {
+            document.getElementById('appliedCouponCode').textContent = `${code} Applied`;
+            document.getElementById('finalAmountText').textContent = '₹0';
+            closeModal('couponModal');
+            alert(`Coupon ${code} applied successfully! Total amount payable is ₹0.`);
+        }
+    }
+
+    function claimCourseAccess() {
+        document.getElementById('claimModal').classList.add('show');
+    }
+
+    function startLearning(courseName) {
+        document.getElementById('claimModalTitle').textContent = `Enrolled in ${courseName}`;
+        document.getElementById('claimModalDesc').textContent = `Your batch access is ready. Review formula notes, study outlines, and simulated mock exams.`;
+        document.getElementById('claimModal').classList.add('show');
+    }
+
+    function startMockTest(testName) {
+        alert(`Starting: ${testName}\n\n• Duration: 120 Mins\n• Negative marking: 25%\n• NSE/NISM Simulator Initializing...`);
+    }
+
+    function downloadResource(resName) {
+        alert(`Downloading: ${resName}\nPDF will be saved to your device.`);
+    }
+</script>
+{% endblock %}
