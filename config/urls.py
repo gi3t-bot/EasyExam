@@ -1,4 +1,5 @@
 """config/urls.py — Root URL configuration."""
+from apps.accounts.webhooks import ClerkWebhookView
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -11,6 +12,7 @@ urlpatterns = [
     path("", HomePageView.as_view(), name="home"),
     path("admin/", admin.site.urls),
     path("accounts/", include("apps.accounts.urls", namespace="accounts")),
+    path("api/webhooks/clerk/", ClerkWebhookView.as_view(), name="clerk-webhook")
 ]
 
 # Serve media files through Django in development only.

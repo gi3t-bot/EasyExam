@@ -7,13 +7,14 @@ Usage:
     Set DJANGO_SETTINGS_MODULE=config.settings.dev in your .env file.
     This is already the default in manage.py.
 """
+from config.settings.base import BASE_DIR
 from .base import *  # noqa: F401, F403
 
 # ── Debug ─────────────────────────────────────────────────────────────────────
 DEBUG = True
 
 # ── Security (relaxed for local dev) ─────────────────────────────────────────
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "0.0.0.0", "testserver"]
+ALLOWED_HOSTS = ["*"]
 
 # ── Installed Apps (dev-only additions) ───────────────────────────────────────
 INSTALLED_APPS += [  # noqa: F405
@@ -79,4 +80,12 @@ LOGGING = {
             "propagate": False,
         },
     },
+}
+
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
 }

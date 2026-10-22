@@ -47,6 +47,14 @@ class CustomUser(AbstractUser):
         help_text="Mobile number with country code, e.g. +919876543210",
     )
 
+    clerk_id = models.CharField(
+        max_length = 255,
+        unique = True,
+        null = True,
+        blank = True,
+        help_text = "Clerk User Id",
+    )
+
     # Which competitive exams is this user preparing for?
     # JSONField avoids a many-to-many table for a simple preference bag.
     # Example value: {"primary": "SSC CGL", "others": ["IBPS PO", "RRB NTPC"]}
