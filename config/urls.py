@@ -7,12 +7,15 @@ from django.conf.urls.static import static
 
 from apps.accounts.views import HomePageView
 
+from apps.accounts.api import MeView
+
 
 urlpatterns = [
     path("", HomePageView.as_view(), name="home"),
     path("admin/", admin.site.urls),
     path("accounts/", include("apps.accounts.urls", namespace="accounts")),
-    path("api/webhooks/clerk/", ClerkWebhookView.as_view(), name="clerk-webhook")
+    path("api/webhooks/clerk/", ClerkWebhookView.as_view(), name="clerk-webhook"),
+    path("api/me/", MeView.as_view()),
 ]
 
 # Serve media files through Django in development only.

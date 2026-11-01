@@ -7,6 +7,7 @@ Usage:
     Set DJANGO_SETTINGS_MODULE=config.settings.dev in your .env file.
     This is already the default in manage.py.
 """
+
 from config.settings.base import BASE_DIR
 from .base import *  # noqa: F401, F403
 
@@ -89,3 +90,8 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+
+# Dev only: don't use Redis on my laptop
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+SESSION_ENGINE = "django.contrib.sessions.backends.db"

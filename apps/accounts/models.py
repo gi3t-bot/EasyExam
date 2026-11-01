@@ -41,18 +41,18 @@ class CustomUser(AbstractUser):
 
     # Phone number — optional for now, required when OTP auth is added
     phone_number = models.CharField(
-        max_length=15,
-        blank=True,
+        max_length=10,
+        blank=False,
         default="",
         help_text="Mobile number with country code, e.g. +919876543210",
     )
 
     clerk_id = models.CharField(
-        max_length = 255,
-        unique = True,
-        null = True,
-        blank = True,
-        help_text = "Clerk User Id",
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True,
+        help_text="Clerk User Id",
     )
 
     # Which competitive exams is this user preparing for?

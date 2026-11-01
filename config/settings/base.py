@@ -13,6 +13,7 @@ Reading order:
   2. dev.py / prod.py override specific values
   3. DJANGO_SETTINGS_MODULE env var selects which file Django loads
 """
+
 from pathlib import Path
 from decouple import config, Csv
 
@@ -23,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # ── Security ──────────────────────────────────────────────────────────────────
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv())
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost,.trycloudflare.com", cast=Csv())
 
 # ── Application Definition ────────────────────────────────────────────────────
 DJANGO_APPS = [
@@ -36,19 +37,15 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    "django_celery_results",   # stores Celery task results in DB
-    "django_celery_beat",      # periodic task scheduler
-    "storages",                # django-storages for S3
+    "django_celery_results",  # stores Celery task results in DB
+    "django_celery_beat",  # periodic task scheduler
+    "storages",  # django-storages for S3
 ]
 
 LOCAL_APPS = [
     "apps.accounts",
-    # Phase 2+:
-    # "apps.content",
-    # "apps.courses",
-    # "apps.quiz",
-    # "apps.payments",
-    # "apps.analytics",
+    "rest_framework",
+    "corsheaders",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -62,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 # ── URL / WSGI / ASGI ─────────────────────────────────────────────────────────
@@ -95,7 +93,9 @@ TEMPLATES = [
 AUTH_USER_MODEL = "accounts.CustomUser"
 
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -134,11 +134,11 @@ CACHES = {
 # All Celery settings are namespaced CELERY_* so celery.py picks them up
 # via app.config_from_object("django.conf:settings", namespace="CELERY")
 CELERY_BROKER_URL = config("REDIS_URL", default="redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = "django-db"          # store results in DB via django-celery-results
-CELERY_RESULT_EXTENDED = True                # store task name, args, kwargs in result
+CELERY_RESULT_BACKEND = "django-db"  # store results in DB via django-celery-results
+CELERY_RESULT_EXTENDED = True  # store task name, args, kwargs in result
 CELERY_CACHE_BACKEND = "default"
 CELERY_TIMEZONE = "Asia/Kolkata"
-CELERY_TASK_TRACK_STARTED = True             # tasks show STARTED state (useful for polling)
+CELERY_TASK_TRACK_STARTED = True  # tasks show STARTED state (useful for polling)
 CELERY_TASK_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_RESULT_SERIALIZER = "json"
@@ -148,13 +148,13 @@ CELERY_RESULT_SERIALIZER = "json"
 # setting is here so adding USE_I18N=True later is a one-liner.
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Kolkata"
-USE_I18N = False          # not building translations in v1
-USE_TZ = True             # always store datetimes as UTC in DB, display in IST
+USE_I18N = False  # not building translations in v1
+USE_TZ = True  # always store datetimes as UTC in DB, display in IST
 
 # ── Static Files ──────────────────────────────────────────────────────────────
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"       # collected here by collectstatic
-STATICFILES_DIRS = [BASE_DIR / "static"]     # project-level static files
+STATIC_ROOT = BASE_DIR / "staticfiles"  # collected here by collectstatic
+STATICFILES_DIRS = [BASE_DIR / "static"]  # project-level static files
 
 # ── Media Files ───────────────────────────────────────────────────────────────
 # In dev: files stored locally under media/
@@ -168,4 +168,22 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ── Session ───────────────────────────────────────────────────────────────────
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 30      # 30 days
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days
+
+
+# ── Clerk ──────────────────────────────────────────
+CLERK_JWKS_URL = config("CLERK_JWKS_URL")
+CLERK_AUTHORIZED_PARTIES = ["http://localhost:5173"]  # where your React app runs
+
+# ── REST API ───────────────────────────────────────
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "apps.accounts.authentication.ClerkAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
+
+# ── CORS (lets React call Django) ──────────────────
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
