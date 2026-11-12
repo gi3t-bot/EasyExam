@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
 
@@ -11,8 +12,11 @@ const BrandLogo = ({ size = 'default' }) => (
 );
 
 export function Navbar() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const handleSectionClick = (e, id) => {
     e.preventDefault();
+    setMobileMenuOpen(false);
     const el = document.getElementById(id);
     if (el) {
       const nav = document.querySelector('.landing-nav');
@@ -26,7 +30,7 @@ export function Navbar() {
   return (
     <header className="landing-nav">
       <div className="nav-container">
-        <Link to="/" className="nav-brand">
+        <Link to="/" className="nav-brand" onClick={() => setMobileMenuOpen(false)}>
           <BrandLogo size="sm" />
           <div className="brand-text-col">
             <span className="brand-name">EasyExam</span>
@@ -34,13 +38,15 @@ export function Navbar() {
           </div>
         </Link>
 
+        {/* Desktop Nav Links */}
         <nav className="nav-menu">
           <a href="#certifications" className="nav-link" onClick={e => handleSectionClick(e, 'certifications')}>Certifications</a>
           <a href="#features" className="nav-link" onClick={e => handleSectionClick(e, 'features')}>Why EasyExam</a>
           <a href="#reviews" className="nav-link" onClick={e => handleSectionClick(e, 'reviews')}>Wall of Success</a>
         </nav>
 
-        <div className="nav-auth-actions">
+        {/* Desktop Auth Actions */}
+        <div className="nav-auth-actions desktop-auth-actions">
           <SignedOut>
             <SignInButton mode="modal">
               <button className="btn btn-outline btn-sm">Sign In</button>
@@ -58,7 +64,64 @@ export function Navbar() {
             <UserButton afterSignOutUrl="/" />
           </SignedIn>
         </div>
+
+        {/* Mobile Hamburger Toggle */}
+        <button
+          className="mobile-nav-toggle"
+          aria-label="Toggle navigation menu"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? (
+            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
+        </button>
       </div>
+
+      {/* Mobile Drawer Dropdown */}
+      {mobileMenuOpen && (
+        <div className="mobile-nav-drawer">
+          <nav className="mobile-nav-links">
+            <a href="#certifications" className="mobile-nav-link" onClick={e => handleSectionClick(e, 'certifications')}>
+              📚 Certifications Catalog
+            </a>
+            <a href="#features" className="mobile-nav-link" onClick={e => handleSectionClick(e, 'features')}>
+              ⚡ Why EasyExam
+            </a>
+            <a href="#reviews" className="mobile-nav-link" onClick={e => handleSectionClick(e, 'reviews')}>
+              🏆 Wall of Success
+            </a>
+            <Link to="/test/1" className="mobile-nav-link demo-highlight" onClick={() => setMobileMenuOpen(false)}>
+              ⏱️ Launch Free Demo Simulator
+            </Link>
+          </nav>
+
+          <div className="mobile-nav-auth">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="btn btn-outline btn-block" onClick={() => setMobileMenuOpen(false)}>Sign In</button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button className="btn btn-primary btn-block" onClick={() => setMobileMenuOpen(false)}>Get Started Free</button>
+              </SignUpButton>
+            </SignedOut>
+
+            <SignedIn>
+              <Link to="/dashboard" className="btn btn-primary btn-block" onClick={() => setMobileMenuOpen(false)}>
+                <span>Go to Student Dashboard</span>
+              </Link>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+                <UserButton afterSignOutUrl="/" />
+              </div>
+            </SignedIn>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

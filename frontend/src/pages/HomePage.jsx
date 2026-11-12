@@ -126,7 +126,7 @@ function ExamCard({ exam }) {
       </div>
 
       <div className="card-action-buttons">
-        <Link to="/login?tab=register" className="btn btn-outline btn-block">
+        <Link to="/test/1" className="btn btn-outline btn-block">
           <span>Free Demo Mock</span>
         </Link>
         <Link to="/login?tab=register" className="btn btn-primary btn-block">
@@ -292,7 +292,7 @@ function ReviewsSection() {
               <div className="cta-card-icon">⚡</div>
               <h3 className="cta-card-title">Join 15,000+ Certified Fintech Professionals</h3>
               <p className="cta-card-desc">Prepare with realistic timed mock test engines, step-by-step quant formulas, and negative marking drills.</p>
-              <Link to="/login?tab=register" className="btn btn-primary btn-block">
+              <Link to="/test/1" className="btn btn-primary btn-block">
                 <span>Start Free Demo Mock</span>
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
               </Link>

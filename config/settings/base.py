@@ -44,6 +44,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "apps.accounts",
+    "apps.exams",
     "rest_framework",
     "corsheaders",
 ]

@@ -1121,6 +1121,8 @@ function CoursesTab() {
 
 // ── Tab: Test Series ──────────────────────────────────────────────
 function TestSeriesTab({ currentExam }) {
+  const navigate = useNavigate();
+
   return (
     <div>
       <div className="section-top-bar">
@@ -1155,8 +1157,12 @@ function TestSeriesTab({ currentExam }) {
                 <span>🎯 {test.marks}</span>
               </div>
             </div>
-            <button type="button" className="btn-start-mock">
-              Start Mock Test
+            <button
+              type="button"
+              className="btn-start-mock"
+              onClick={() => navigate(`/test/${test.id}`)}
+            >
+              Start Mock Test →
             </button>
           </div>
         ))}

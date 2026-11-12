@@ -516,16 +516,156 @@
 .modal-close-btn:hover { background: #e2e8f0; }
 
 /* ── Supercoaching Page ─────────────────────────────────────── */
-.supercoaching-page { background: #f8fafc; min-height: 100vh; }
+.supercoaching-page {
+  background: #f8fafc;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
 
+/* ══════════════════════════════════════════════════════════════
+   DASHBOARD RESPONSIVE DESIGN — TABLET, MOBILE, iOS & ANDROID
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Tablet Screens (769px to 1024px: iPad, Android Tablets) ── */
 @media (max-width: 1024px) {
+  .super-nav-container { padding: 0 16px; }
   .super-hero-container { grid-template-columns: 1fr; }
   .super-plan-card { display: none; }
-  .section-layout-grid { grid-template-columns: 1fr; }
-  .category-filter-sidebar { flex-direction: row; flex-wrap: wrap; }
+  .section-layout-grid { grid-template-columns: 1fr; gap: 16px; }
+  .category-filter-sidebar {
+    flex-direction: row;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .category-filter-sidebar::-webkit-scrollbar { display: none; }
+  .category-pill-btn { flex-shrink: 0; }
+  .super-main-content { padding: 24px 16px; }
+  .test-series-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 }
+
+/* ── Mobile Screens (< 768px: iPhone, Android, iPad Mini) ──── */
 @media (max-width: 768px) {
-  .prep-hero-card { flex-direction: column; padding: 28px 24px; }
-  .prep-hero-illustration { display: none; }
+  /* Navbar */
+  .super-nav-container {
+    padding: 0 12px;
+    height: 56px;
+    gap: 10px;
+  }
+
   .super-nav-search { display: none; }
+
+  .super-brand-logo-text { font-size: 1.05rem; }
+
+  .exam-selector-btn {
+    padding: 5px 10px;
+    font-size: 0.82rem;
+    max-width: 160px;
+  }
+
+  .exam-selector-btn span:first-of-type {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .notifications-dropdown-menu {
+    width: min(340px, calc(100vw - 24px));
+    right: -12px;
+  }
+
+  /* Subnav */
+  .super-subnav-wrapper { top: 56px; }
+  .super-subnav-container {
+    padding: 0 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .super-subnav-container::-webkit-scrollbar { display: none; }
+  .subnav-tab-btn {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+
+  /* Main Hero */
+  .prep-hero-card {
+    flex-direction: column;
+    padding: 22px 18px;
+    gap: 16px;
+  }
+  .prep-hero-illustration { display: none; }
+  .prep-hero-title { font-size: 1.45rem; }
+  .prep-hero-desc { font-size: 0.88rem; margin-bottom: 16px; }
+  .prep-hero-actions { flex-direction: column; width: 100%; gap: 8px; }
+  .btn-start-hero-mock, .btn-claim-free { width: 100%; justify-content: center; }
+
+  /* Main Layout */
+  .super-main-content {
+    padding: 20px 12px calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+  .section-top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .section-main-heading { font-size: 1.15rem; }
+
+  /* Cards */
+  .course-card-item {
+    flex-direction: column;
+    padding: 16px;
+    gap: 14px;
+    border-radius: 12px;
+  }
+  .course-thumb-box {
+    width: 100%;
+    min-height: 80px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .course-title-text { font-size: 1rem; }
+  .course-footer-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .course-action-buttons {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+  .course-action-buttons button {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Test Series */
+  .test-series-grid { grid-template-columns: 1fr; gap: 12px; }
+  .test-mock-card { padding: 16px; border-radius: 12px; }
+  .btn-start-mock { width: 100%; }
+
+  /* Modals */
+  .modal-box {
+    padding: 22px 16px;
+    max-width: calc(100vw - 28px);
+    border-radius: 14px;
+  }
+  .coupon-input-row { flex-direction: column; }
+  .btn-apply-coupon { width: 100%; }
+}
+
+/* ── Small Smartphones (< 480px: iPhone SE, Android 360px) ── */
+@media (max-width: 480px) {
+  .brand-tag-edition { display: none; }
+  .exam-selector-btn { max-width: 125px; }
+  .nav-pass-active span:last-child { display: none; }
+  .super-nav-container { padding: 0 10px; gap: 6px; }
+  .prep-hero-title { font-size: 1.3rem; }
+  .prep-hero-stats-row { flex-wrap: wrap; gap: 10px; }
 }

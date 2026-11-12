@@ -16,6 +16,7 @@ urlpatterns = [
     path("accounts/", include("apps.accounts.urls", namespace="accounts")),
     path("api/webhooks/clerk/", ClerkWebhookView.as_view(), name="clerk-webhook"),
     path("api/me/", MeView.as_view()),
+    path("api/", include("apps.exams.urls", namespace="exams")),
 ]
 
 # Serve media files through Django in development only.

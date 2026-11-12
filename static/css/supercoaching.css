@@ -1878,7 +1878,7 @@
 
 
 /* ══════════════════════════════════════════════════════════════
-   9. RESPONSIVE QUERIES
+   9. RESPONSIVE QUERIES — TABLET, MOBILE, iOS & ANDROID
    ══════════════════════════════════════════════════════════════ */
 @media (max-width: 1080px) {
     .super-hero-container {
@@ -1892,7 +1892,12 @@
     .category-filter-sidebar {
         flex-direction: row;
         overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 4px;
     }
+    .category-filter-sidebar::-webkit-scrollbar { display: none; }
 
     .course-card-item {
         grid-template-columns: 1fr;
@@ -1900,12 +1905,29 @@
 }
 
 @media (max-width: 768px) {
+    .super-nav-container {
+        padding: 0 12px;
+        height: 56px;
+        gap: 8px;
+    }
+
     .super-nav-search {
         display: none;
     }
 
+    .exam-selector-btn {
+        max-width: 150px;
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+    .exam-selector-btn span:first-of-type {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .banner-title {
-        font-size: 1.65rem;
+        font-size: 1.5rem;
     }
 
     .floating-quick-dock {
@@ -1913,8 +1935,19 @@
     }
 
     .nav-notifications-menu {
-        width: 320px;
-        right: -60px;
+        width: min(320px, calc(100vw - 24px));
+        right: -12px;
+    }
+
+    .subnav-tabs-container {
+        padding: 0 12px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .subnav-tabs-container::-webkit-scrollbar { display: none; }
+
+    .super-main-content {
+        padding: 20px 12px calc(32px + env(safe-area-inset-bottom, 0px));
     }
 
     .banner-bottom-row {
@@ -1922,11 +1955,37 @@
         align-items: flex-start;
         gap: 12px;
     }
+
+    .course-card-item {
+        padding: 16px;
+        border-radius: var(--ee-radius-md);
+    }
 }
 
 @media (max-width: 480px) {
+    .brand-tag-edition {
+        display: none;
+    }
+
+    .exam-selector-btn {
+        max-width: 120px;
+    }
+
+    .nav-pass-active span:last-child {
+        display: none;
+    }
+
+    .super-nav-container {
+        padding: 0 10px;
+        gap: 6px;
+    }
+
     .nav-notifications-menu {
-        width: 290px;
-        right: -75px;
+        width: calc(100vw - 20px);
+        right: -6px;
+    }
+
+    .banner-title {
+        font-size: 1.3rem;
     }
 }

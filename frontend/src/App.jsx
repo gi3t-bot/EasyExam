@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import VerifyOTPPage from './pages/VerifyOTPPage';
 import DashboardPage from './pages/DashboardPage';
+import ExamSimulatorPage from './pages/ExamSimulatorPage';
 
 export default function App() {
   return (
@@ -25,6 +26,10 @@ export default function App() {
             </>
           }
         />
+        {/* Exam Simulator routes */}
+        <Route path="/test/:testId" element={<ExamSimulatorPage />} />
+        <Route path="/test" element={<ExamSimulatorPage />} />
+
         {/* Catch-all — redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
